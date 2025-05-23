@@ -6,14 +6,20 @@ NVIDIA_ENV="__GL_THREADED_OPTIMIZATIONS=0"
 STEAM_DIR="$HOME/.local/share/Steam/steamapps/workshop/content/431960"
 # Hyprland conf folder
 HYPRCONF="$HOME/.config/hypr/hyprland.conf"
+
+# Default flags and options
+DEFAULT_FLAGS=("--disable-mouse" "--scaling fill")
+OPTIONS=("--disable-mouse" "--disable-parallax" "--no-fullscreen-pause" "--silent" "--noautomute")
+SCALING_OPTIONS=(stretch fit fill default)
+
 # Delete base folder from choices
 BASE_ID=$(basename "$STEAM_DIR")
 
-# 1) Choose monitor
+# Choose monitor
 MON=$(hyprctl monitors | awk '/Monitor/ && /DP/ {print $2}' | wofi --dmenu -p "Monitor")
 [[ -z "$MON" ]] && exit 0
 
-# 2) Gather wallpapers with preview and title
+# Gather wallpapers with preview and title
 items=()
 while read -r id; do
   [[ "$id" == "$BASE_ID" ]] && continue
@@ -38,7 +44,7 @@ while read -r id; do
   fi
 done < <(find "$STEAM_DIR" -maxdepth 1 -type d -printf '%f\n')
 
-# 3) Choose wallpaper
+# Choose wallpaper
 CHOICE=$(printf '%s\n' "${items[@]}" | wofi --dmenu --allow-images -p "Wallpaper ID")
 [[ -z "$CHOICE" ]] && exit 0
 if [[ "$CHOICE" == img:* ]]; then
@@ -48,15 +54,10 @@ else
 fi
 ID=${text%%[\ \(\)]*}
 
-# 4) Change previous launch parameters?
+# Change previous launch parameters?
 CHANGE=$(printf 'No\nYes' | wofi --dmenu -p "Change previous launch parameters?")
 
-# 5) Default flags and options
-DEFAULT_FLAGS=("--disable-mouse" "--scaling fill")
-OPTIONS=("--disable-mouse" "--disable-parallax" "--no-fullscreen-pause" "--silent" "--noautomute")
-SCALING_OPTIONS=(stretch fit fill default)
-
-# 6) Parse existing flags for this monitor
+# Parse existing flags for this monitor
 current_line=$(grep -m1 "^exec-once = .*linux-wallpaperengine --screen-root $MON" "$HYPRCONF")
 current_flags=()
 current_scaling=""
@@ -72,7 +73,7 @@ if [[ -n "$current_line" ]]; then
   done
 fi
 
-# 7) Choose flags
+# Choose flags
 FLAGS=()
 SCALING="$current_scaling"
 if [[ "$CHANGE" == "Yes" ]]; then
@@ -101,10 +102,10 @@ else
 fi
 FLAGS+=("--scaling" "$SCALING")
 
-# 8) Kill previous for this monitor
+# Kill dublicate for choosen monitor
 pkill -f "linux-wallpaperengine --screen-root $MON"
 
-# 9) Build and run command with NVIDIA fix
+# Build and run command with NVIDIA fix
 CMD=(linux-wallpaperengine --screen-root "$MON" --fps 30)
 CMD+=("${FLAGS[@]}")
 CMD+=("$ID")
@@ -113,7 +114,7 @@ CMD+=("$ID")
   setsid bash -c "$NVIDIA_ENV ${CMD[*]}" &>/dev/null &
 )
 
-# 10) Update exec-once
+# Update exec-once
 sed -i "/^exec-once = .*linux-wallpaperengine --screen-root $MON/d" "$HYPRCONF"
 EXEC_LINE="exec-once = $NVIDIA_ENV ${CMD[*]} &"
 printf "%s\n" "$EXEC_LINE" >> "$HYPRCONF"
