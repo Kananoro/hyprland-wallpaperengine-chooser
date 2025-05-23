@@ -1,4 +1,4 @@
-# Hypr WallpaperEngine Chooser
+# Hyprland WallpaperEngine Chooser
 
 I'm little bit tired to configure linux-wallpaperengine every time for every monitor i have so...
 
