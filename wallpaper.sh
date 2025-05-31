@@ -5,7 +5,7 @@ NVIDIA_ENV="__GL_THREADED_OPTIMIZATIONS=0"
 # Wallpaper Engine Folder
 STEAM_DIR="$HOME/.local/share/Steam/steamapps/workshop/content/431960"
 # Hyprland conf folder
-HYPRCONF="$HOME/.config/hypr/hyprland.conf"
+WALLPAPERCONF="$HOME/.config/hypr/wallpaperengine.conf"
 
 # Default flags and options
 DEFAULT_FLAGS=("--disable-mouse" "--scaling fill")
@@ -54,11 +54,15 @@ else
 fi
 ID=${text%%[\ \(\)]*}
 
+#Check if  config file exists
+mkdir -p "$(dirname "$WALLPAPERCONF")"
+touch "$WALLPAPERCONF"
+
 # Change previous launch parameters?
 CHANGE=$(printf 'No\nYes' | wofi --dmenu -p "Change previous launch parameters?")
 
 # Parse existing flags for this monitor
-current_line=$(grep -m1 "^exec-once = .*linux-wallpaperengine --screen-root $MON" "$HYPRCONF")
+current_line=$(grep -m1 "^exec-once = .*linux-wallpaperengine --screen-root $MON" "$WALLPAPERCONF")
 current_flags=()
 current_scaling=""
 if [[ -n "$current_line" ]]; then
@@ -115,6 +119,6 @@ CMD+=("$ID")
 )
 
 # Update exec-once
-sed -i "/^exec-once = .*linux-wallpaperengine --screen-root $MON/d" "$HYPRCONF"
+sed -i "/^exec-once = .*linux-wallpaperengine --screen-root $MON/d" "$WALLPAPERCONF"
 EXEC_LINE="exec-once = $NVIDIA_ENV ${CMD[*]} &"
-printf "%s\n" "$EXEC_LINE" >> "$HYPRCONF"
+printf "%s\n" "$EXEC_LINE" >> "$WALLPAPERCONF"
