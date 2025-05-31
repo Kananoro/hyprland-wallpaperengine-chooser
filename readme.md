@@ -13,7 +13,7 @@ I'm little bit tired to configure linux-wallpaperengine every time for every mon
 - Choose scaling mode (`stretch`, `fit`, `fill`, `default`)
 - Edit launch flags (`--disable-mouse`, `--disable-parallax`,`--silent`, etc.)
 - **Remembers flags per monitor**
-- Automatic update of `exec-once` in `hyprland.conf`
+- Writes `exec-once` entries to a separate config (`wallpaperengine.conf`) instead of modifying `hyprland.conf` directly
 - Fixes black screen issue for NVIDIA users (based on fix from the [official repo](https://github.com/Almamu/linux-wallpaperengine))
 - Kills the process for the selected monitor to prevent duplicates
 
@@ -43,10 +43,11 @@ chmod +x wallpaper.sh
 
 ## ⚙️ Configuration
 
-- Edit the `STEAM_DIR`, `HYPRCONF` variables in the script if your paths are different
-  - Leave `NVIDIA_ENV` empty if you don't use an NVIDIA GPU
-- Ensure `hyprland.conf` doesn't contain duplicate `exec-once` lines for l`inux-wallpaperengine` (the script will try to clean up, but just in case).
+- Add `source = ~/.config/hypr/wallpaperengine.conf (Or any other path you choose in $WALLPAPERCONF)` to your `hyprland.conf` manually. The script won't do it automatically for safety reasons.
+- Edit the `STEAM_DIR` variable in the script if your paths are different
+  - Leave `NVIDIA_ENV` empty if you don't use NVIDIA GPU
+- Ensure `hyprland.conf` doesn't contain duplicate `exec-once` lines for `linux-wallpaperengine`
 - (Optional) Adjust your wofi style (`~/.config/wofi/style.css`) for icon sizing
-- My own idea was add this script to bind in `hyprland.conf`
+- You can bind this script to a key using `bind = ...`
 
 I'm new in Hyprland (only 3 days in), so this might be a bit rough. Feel free to open issues
