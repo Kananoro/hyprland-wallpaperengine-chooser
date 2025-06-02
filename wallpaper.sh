@@ -65,8 +65,12 @@ CHANGE=$(printf 'No\nYes' | wofi --dmenu -p "Change previous launch parameters?"
 current_line=$(grep -m1 "^exec-once = .*linux-wallpaperengine --screen-root $MON" "$WALLPAPERCONF")
 current_flags=()
 current_scaling=""
+current_fps=30
 if [[ -n "$current_line" ]]; then
-  flags_part=${current_line#*--fps 30}
+  if [[ "$current_line" =~ --fps[[:space:]]+([0-9]+) ]]; then
+    current_fps=${BASH_REMATCH[1]}  # extract existing fps
+  fi
+  flags_part=${current_line#*--fps $current_fps}
   flags_part=${flags_part%&}
   read -r -a parts <<< "$flags_part"
   for f in "${parts[@]}"; do
@@ -96,6 +100,12 @@ if [[ "$CHANGE" == "Yes" ]]; then
   done
   SCALING=$(printf '%s\n' "${SCALING_OPTIONS[@]}" | wofi --dmenu -p "Choose scaling")
   [[ -z "$SCALING" ]] && SCALING="fill"
+  FPS_INPUT=$(printf '%s\n' "$current_fps" | wofi --dmenu -p "Enter FPS (default $current_fps)")  # ask FPS
+  if [[ -n "$FPS_INPUT" && "$FPS_INPUT" =~ ^[0-9]+$ ]]; then
+    FPS="$FPS_INPUT"  # use input
+  else
+    FPS="$current_fps"
+  fi
 else
   if [[ ${#current_flags[@]} -gt 0 ]]; then
     FLAGS=("${current_flags[@]}")
@@ -103,6 +113,7 @@ else
     FLAGS=("${DEFAULT_FLAGS[@]}")
   fi
   [[ -n "$current_scaling" ]] && SCALING="$current_scaling"
+  FPS="$current_fps"
 fi
 FLAGS+=("--scaling" "$SCALING")
 
@@ -110,7 +121,7 @@ FLAGS+=("--scaling" "$SCALING")
 pkill -f "linux-wallpaperengine --screen-root $MON"
 
 # Build and run command with NVIDIA fix
-CMD=(linux-wallpaperengine --screen-root "$MON" --fps 30)
+CMD=(linux-wallpaperengine --screen-root "$MON" --fps "$FPS")
 CMD+=("${FLAGS[@]}")
 CMD+=("$ID")
 (
